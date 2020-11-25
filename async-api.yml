@@ -9,7 +9,7 @@ info:
 
 servers:
   mosquitto:
-    url: mqtt://localhost
+    url: mqtt://mqtt
     protocol: mqtt
 
 channels:

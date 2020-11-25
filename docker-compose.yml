@@ -4,8 +4,16 @@ services:
     container_name: server
     build: ./server
     restart: always
+    networks:
+      - async-api-example
   mqtt:
     container_name: mqtt
     image: eclipse-mosquitto
     ports:
       - 1883:1883
+    networks:
+      - async-api-example
+
+networks:
+  async-api-example:
+    external: false

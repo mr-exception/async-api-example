@@ -1,0 +1,21 @@
+default:
+  app:
+    name: async api example
+    version: 1.0.0
+
+  broker:
+    mqtt:
+      url: mqtt://mqtt
+      topics: ["collections"]
+      qos:
+      protocol: mqtt
+      retain:
+      subscribe: true
+
+development:
+
+test:
+
+staging:
+
+production:

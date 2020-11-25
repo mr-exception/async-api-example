@@ -1,0 +1,33 @@
+asyncapi: '2.0.0'
+info:
+  title: async api example
+  version: '1.0.0'
+  description: async api example
+  license:
+    name: Apache 2.0
+    url: 'https://www.apache.org/licenses/LICENSE-2.0'
+
+servers:
+  mosquitto:
+    url: mqtt://mqtt
+    protocol: mqtt
+
+channels:
+  collections:
+    publish:
+      summary: get collection records
+      operationId: collectionsGet
+      message:
+        payload:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                minimum: 0
+                description: Id of record
+              createdAt:
+                type: string
+                format: date-time
+                description: Date and time when record created

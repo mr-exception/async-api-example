@@ -13,6 +13,8 @@ services:
       - 1883:1883
     networks:
       - async-api-example
+    logging:
+      driver: none
 
 networks:
   async-api-example:

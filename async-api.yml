@@ -1,33 +1,275 @@
-asyncapi: '2.0.0'
+asyncapi: 2.0.0
 info:
-  title: async api example
-  version: '1.0.0'
-  description: async api example
+  title: SharingPad
+  version: "1.0.0"
+  description: SharingPad async apis
   license:
     name: Apache 2.0
-    url: 'https://www.apache.org/licenses/LICENSE-2.0'
-
+    url: https://www.apache.org/licenses/LICENSE-2.0
 servers:
-  mosquitto:
-    url: mqtt://mqtt
+  production:
+    url: mqtt.sharingpad.ai
     protocol: mqtt
-
+    description: message broker
+defaultContentType: application/json
 channels:
-  collections:
-    publish:
-      summary: get collection records
-      operationId: collectionsGet
+  files/get:
+    description: files channel
+    subscribe:
+      summary: retrives last updates in files collection
+      operationId: retriveFilesUpdates
       message:
-        payload:
+        oneOf:
+          - $ref: "#/components/messages/fileCreated"
+          - $ref: "#/components/messages/fileUpdated"
+          - $ref: "#/components/messages/fileRemoved"
+  files/create:
+    publish:
+      summary: create a file
+      operationId: createFile
+      message:
+        $ref: "#/components/messages/createFile"
+  files/update:
+    publish:
+      summary: update a file
+      operationId: updateFile
+      message:
+        $ref: "#/components/messages/updateFile"
+  files/remove:
+    publish:
+      summary: remove a file
+      operationId: removeFile
+      message:
+        $ref: "#/components/messages/removeFile"
+  roles:
+    subscribe:
+      summary: gets list of roles
+      operationId: getRoles
+      message:
+        $ref: "#/components/messages/roles"
+  sharePolicies/get:
+    subscribe:
+      summary: gets list of share policies for a project
+      operationId: getSharePolicies
+      message:
+        $ref: "#/components/messages/sharePolicies"
+  sharePolicies/set:
+    publish:
+      summary: update share policies of a project
+      operationId: setSharePolicies
+      message:
+        $ref: "#/components/messages/setSharePolicies"
+components:
+  messages:
+    roles:
+      name: roles
+      title: roles
+      summary: roles
+      contentType: application/json
+      payload:
+        type: array
+        items:
+          $ref: "#/components/schemas/role"
+    sharePolicies:
+      name: sharePolicies
+      title: share policies
+      summary: share policies
+      contentType: application/json
+      payload:
+        type: array
+        items:
+          $ref: "#/components/schemas/sharePolicy"
+    setSharePolicies:
+      name: setSharePolicies
+      title: set share policies
+      summary: set share policies
+      contentType: application/json
+      payload:
+        type: array
+        items:
+          $ref: "#/components/schemas/sharePolicy"
+
+    fileCreated:
+      name: fileCreated
+      title: file created
+      summary: new file created
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          action:
+            type: string
+            description: action type
+            example: create
+            enum:
+              - create
+              - update
+              - delete
+          file:
+            $ref: "#/components/schemas/file"
+    fileUpdated:
+      name: fileUpdated
+      title: file updated
+      summary: new file updated
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          action:
+            type: string
+            description: action type
+            example: update
+          file:
+            $ref: "#/components/schemas/file"
+    fileRemoved:
+      name: fileRemoved
+      title: file removed
+      summary: new file removed
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          action:
+            type: string
+            description: action type
+            example: update
+          id:
+            type: string
+            description: uuid of file
+            example: sample-uuid
+    createFile:
+      name: createFile
+      title: create file
+      summary: create new file
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          action:
+            type: string
+            description: action type
+            example: create
+          title:
+            type: string
+            description: file title
+            example: foo file
+    updateFile:
+      name: updateFile
+      title: update a file
+      summary: update a file based on file uuid
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          action:
+            type: string
+            description: action type
+            example: update
+          id:
+            type: string
+            description: file uuid
+            example: sample-uuid
+          title:
+            type: string
+            description: file title
+            example: foo file
+    removeFile:
+      name: removeFile
+      title: remove file
+      summary: remove new file
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          action:
+            type: string
+            description: action type
+            example: remove
+          id:
+            type: string
+            description: file uuid
+            example: sample-uuid
+  schemas:
+    owner:
+      type: object
+      description: owner
+      properties:
+        name:
+          type: string
+          format: email
+          example: "user@mail.com"
+        type:
+          type: string
+          example: sample-owner
+    file:
+      type: object
+      properties:
+        "@id":
+          type: string
+          description: uuid of file
+          example: sample-uuid
+        name:
+          type: string
+          description: title of file
+          example: foo file
+        tags:
           type: array
           items:
-            type: object
-            properties:
-              id:
-                type: integer
-                minimum: 0
-                description: Id of record
-              createdAt:
-                type: string
-                format: date-time
-                description: Date and time when record created
+            type: string
+          example: ["large", "floor1"]
+        "@context":
+          type: string
+          description: context of file
+          example: sample-context
+        "@type":
+          type: string
+          description: type of file
+          example: sample-type
+        updated:
+          type: string
+          description: updated date
+          example: "2020-11-04"
+        updatedBy:
+          type: string
+          description: updated by user
+          example: "user@mail.com"
+        created:
+          type: string
+          description: created date
+          example: "2020-11-04"
+        createdBy:
+          type: string
+          description: created by user
+          example: "user@mail.com"
+        owner:
+          $ref: "#/components/schemas/owner"
+        thumbnail:
+          type: string
+          description: file thumbnail url
+          example: https://sharingpad.ai/thumbnail-url
+        processing:
+          type: boolean
+          description: if file is processing
+          example: false
+    role:
+      type: object
+      properties:
+        name:
+          type: string
+          description: name of role
+          example: Editor
+        description:
+          type: string
+          description: description of role
+          example: Editor
+    sharePolicy:
+      type: object
+      properties:
+        user:
+          type: string
+          description: user name
+          example: "user@mail.com"
+        role:
+          type: string
+          description: role
+          example: Editor
